@@ -1,5 +1,6 @@
 package com.example.sweater.service;
 
+import com.example.sweater.domain.Info;
 import com.example.sweater.domain.IrisDto;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
@@ -22,18 +23,27 @@ import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.io.ClassPathResource;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassificationService {
     private static final int CLASSES_COUNT = 3;
     private static final int FEATURES_COUNT = 4;
+    private static final Logger logger = LoggerFactory.getLogger(ClassificationService.class);
+
     private DataSet allData;
     private MultiLayerNetwork model;
 
-    public String trainNetwork() {
+
+    public List<Info> trainNetwork() {
         try {
             try (RecordReader recordReader = new CSVRecordReader(0, ',')) {
                 recordReader.initialize(new FileSplit(new ClassPathResource("iris.txt").getFile()));
@@ -79,10 +89,14 @@ public class ClassificationService {
 
         Evaluation eval = new Evaluation(CLASSES_COUNT);
         eval.eval(testData.getLabels(), output);
-        return eval.stats();
+        String[] labels = eval.stats().split("\n");
+
+        return Arrays.stream(labels).map(Info::new).collect(Collectors.toList());
     }
 
-    public String classifyFlower(IrisDto irisDto) {
+    public List<Info> classifyFlower(IrisDto irisDto) {
+        writeToFile(irisDto);
+
         try {
             try (RecordReader recordReader = new CSVRecordReader(0, ',')) {
                 recordReader.initialize(new FileSplit(new ClassPathResource("example.txt").getFile()));
@@ -91,7 +105,7 @@ public class ClassificationService {
                 allData = iterator.next();
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
 
         allData.shuffle(42);
@@ -104,7 +118,18 @@ public class ClassificationService {
 
         Evaluation eval = new Evaluation(CLASSES_COUNT);
         eval.eval(testData.getLabels(), output);
-        return eval.stats();
+        String[] labels = eval.stats().split("\n");
+
+        return Arrays.stream(labels).map(Info::new).collect(Collectors.toList());
+    }
+
+    private void writeToFile(IrisDto irisDto) {
+        try (FileWriter writer = new FileWriter("example.txt", false)) {
+            writer.write(irisDto.toString());
+            writer.flush();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+        }
     }
 
 }

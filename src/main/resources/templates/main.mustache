@@ -6,16 +6,34 @@
 </head>
 <body>
 <div>
+    <form method="get" action="/train">
+        <button type="submit">Train network</button>
+      <p/>
+        {{#info}}
+            <div>
+                <b>{{label}}</b>
+            </div>
+        {{/info}}
+
+    </form>
+</div>
+<p/>
+<div>
     <form method="post">
-        <button type="submit">Определить класс</button>
-        <div>{{flowers}} </div>
+        <input type="number" step="0.01" name="lengthPetal" placeholder="Length of Petal" />
+        <input type="number" step="0.01" name="widthPetal" placeholder="Width of Petal" />
+        <input type="number" step="0.01" name="lengthSepal" placeholder="Length of Sepal" />
+        <input type="number" step="0.01" name="widthSepal" placeholder="Width of Sepal" />
+        <button type="submit">Define flower</button>
+        <p/>
+        {{#flowers}}
+            <div>
+                <b>{{label}}</b>
+            </div>
+        {{/flowers}}
     </form>
 </div>
 
-<form method="get" action="/train">
-    <button type="submit">Обучить</button>
-    <div>{{info}}</div>
-</form>
 
 </body>
 </html>

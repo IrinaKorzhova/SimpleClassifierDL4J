@@ -1,21 +1,19 @@
 package com.example.sweater;
 
+import com.example.sweater.domain.Info;
 import com.example.sweater.domain.IrisDto;
 import com.example.sweater.service.ClassificationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class GreetingController {
-    private String info = "";
-    private String flowers = "First thing, please click on the train";
+    private List<Info> info = Collections.singletonList(new Info(""));
+    private List<Info> flowers = Collections.singletonList(new Info(""));
 
     public static Map<Integer, String> mapOfIris;
 
@@ -38,10 +36,14 @@ public class GreetingController {
         return "main";
     }
 
-    @PostMapping
-    public String add(Map<String, Object> model) {
+    @PostMapping(consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public String add(Map<String, Object> model,
+                      @RequestParam(name = "lengthPetal") float lengthPetal,
+                      @RequestParam(name = "widthPetal") float widthPetal,
+                      @RequestParam(name = "lengthSepal") float lengthSepal,
+                      @RequestParam(name = "widthSepal") float widthSepal) {
 
-        flowers = classificationService.classifyFlower(null);
+        flowers = classificationService.classifyFlower(new IrisDto(lengthPetal, widthPetal, lengthSepal, widthSepal));
         model.put("flowers", flowers);
         model.put("info", info);
         return "main";
